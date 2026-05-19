@@ -4,7 +4,7 @@ import pandas as pd
 
 st.set_page_config(page_title="Quiz APS - Supabase", layout="wide")
 
-# 🔌 Conexão direta com Supabase
+# 🔌 Conexão direta com Supabase utilizando cache para performance
 @st.cache_resource
 def init_supabase():
     url = st.secrets["connections"]["supabase"]["url"]
@@ -55,7 +55,7 @@ with tab_quiz:
         )
 
         q7 = st.text_input(
-            "7. O serviço de saúde oferece procedimentos como remoção de verrugas ou outros pequenos procedimentos cisúrgicos?"
+            "7. O serviço de saúde oferece procedimentos como remoção de verrugas ou outros pequenos procedimentos cirúrgicos?"
         )
 
         st.divider()
@@ -83,10 +83,9 @@ with tab_quiz:
             supabase.table("respostas_aps").insert(dados).execute()
             st.success("✅ Enviado com sucesso!")
             st.balloons()
-            st.rerun() # Atualiza a página para limpar o formulário e atualizar o dash
+            st.rerun() 
         except Exception as e:
             st.error(f"❌ Erro ao enviar: {e}")
-            st.info("💡 Verifique se a tabela 'respostas_aps' existe no seu banco de dados Supabase.")
 
 # =========================
 # 📊 DASHBOARD
@@ -100,20 +99,19 @@ with tab_dash:
         if res.data and len(res.data) > 0:
             df = pd.DataFrame(res.data)
 
-            st.metric("Total de respostas", len(df))
+            st.metric("Total de respostas recebidas", len(df))
 
-            # Remove colunas que não são do quiz antes de somar os acertos
+            # Filtra apenas as colunas das questões para gerar o gráfico
             colunas_excluir = ["id", "created_at"]
             dados_chart = df.drop(columns=[col for col in colunas_excluir if col in df.columns]).sum()
 
             st.markdown("### Total de Acertos por Questão")
             st.bar_chart(dados_chart)
 
-            st.markdown("### Dados Analíticos")
+            st.markdown("### Tabela de Dados Brutos")
             st.dataframe(df)
         else:
-            st.info("Ainda não há respostas registradas nesta tabela.")
+            st.info("📥 A tabela está pronta e vazia! Envie uma resposta na aba 'Responder' para estrear o painel.")
 
     except Exception as e:
-        st.error(f"Erro ao carregar dados: {e}")
-        st.warning("⚠️ Certifique-se de criar a tabela no Supabase e desativar o RLS ou criar as políticas de acesso.")
+        st.error(f"Erro ao carregar dados do painel: {e}")
