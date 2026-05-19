@@ -5,10 +5,17 @@ import pandas as pd
 st.set_page_config(page_title="Quiz APS - Supabase", layout="wide")
 
 # 🔌 Conexão direta com Supabase
-url = st.secrets["connections"]["supabase"]["url"]
-key = st.secrets["connections"]["supabase"]["key"]
+@st.cache_resource
+def init_supabase():
+    url = st.secrets["connections"]["supabase"]["url"]
+    key = st.secrets["connections"]["supabase"]["key"]
+    return create_client(url, key)
 
-supabase = create_client(url, key)
+try:
+    supabase = init_supabase()
+except Exception as e:
+    st.error(f"Erro ao conectar ao Supabase: {e}")
+    st.stop()
 
 st.title("🩺 Avaliação de Conhecimentos: APS")
 
@@ -32,7 +39,6 @@ with tab_quiz:
 
         st.divider()
 
-        # 🔹 Contexto ajustado
         st.markdown("### Atributos da APS (PCATool)")
         st.caption("O PCATool é um instrumento padronizado para avaliar a qualidade da Atenção Primária à Saúde, medindo a presença e o grau de desenvolvimento dos quatro atributos essenciais que configuram uma APS robusta (Starfield). Correlacione as perguntas abaixo com apenas 1 atributo essencial da APS:")
 
@@ -49,7 +55,7 @@ with tab_quiz:
         )
 
         q7 = st.text_input(
-            "7. O serviço de saúde oferece procedimentos como remoção de verrugas ou outros pequenos procedimentos cirúrgicos?"
+            "7. O serviço de saúde oferece procedimentos como remoção de verrugas ou outros pequenos procedimentos cisúrgicos?"
         )
 
         st.divider()
@@ -60,7 +66,6 @@ with tab_quiz:
         enviar = st.form_submit_button("Enviar Respostas")
 
     if enviar:
-
         def validar(entrada, gabarito):
             return 1 if entrada and gabarito.lower() in entrada.lower() else 0
 
@@ -78,8 +83,10 @@ with tab_quiz:
             supabase.table("respostas_aps").insert(dados).execute()
             st.success("✅ Enviado com sucesso!")
             st.balloons()
+            st.rerun() # Atualiza a página para limpar o formulário e atualizar o dash
         except Exception as e:
             st.error(f"❌ Erro ao enviar: {e}")
+            st.info("💡 Verifique se a tabela 'respostas_aps' existe no seu banco de dados Supabase.")
 
 # =========================
 # 📊 DASHBOARD
@@ -90,19 +97,23 @@ with tab_dash:
     try:
         res = supabase.table("respostas_aps").select("*").execute()
 
-        if res.data:
+        if res.data and len(res.data) > 0:
             df = pd.DataFrame(res.data)
 
             st.metric("Total de respostas", len(df))
 
-            dados_chart = df.drop(columns=["id", "created_at"], errors="ignore").sum()
+            # Remove colunas que não são do quiz antes de somar os acertos
+            colunas_excluir = ["id", "created_at"]
+            dados_chart = df.drop(columns=[col for col in colunas_excluir if col in df.columns]).sum()
 
+            st.markdown("### Total de Acertos por Questão")
             st.bar_chart(dados_chart)
 
+            st.markdown("### Dados Analíticos")
             st.dataframe(df)
-
         else:
-            st.info("Sem dados.")
+            st.info("Ainda não há respostas registradas nesta tabela.")
 
     except Exception as e:
         st.error(f"Erro ao carregar dados: {e}")
+        st.warning("⚠️ Certifique-se de criar a tabela no Supabase e desativar o RLS ou criar as políticas de acesso.")
