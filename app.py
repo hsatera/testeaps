@@ -1,4 +1,4 @@
-import streamlit as str
+import streamlit as st  # Corrigido aqui para 'as st'
 from supabase import create_client, Client
 import pandas as pd
 
@@ -54,8 +54,7 @@ if check_password():
             return pd.DataFrame()
         
         try:
-            # Substitua 'nome_da_sua_tabela' pelo nome real da tabela no Supabase
-            # Se você já tiver uma coluna de ordem (ex: 'id_questao' ou 'numero'), adicione .order('coluna')
+            # ⚠️ LEMBRE-SE DE ALTERAR 'nome_da_sua_tabela' PARA O NOME REAL DA SUA TABELA
             response = supabase.table("nome_da_sua_tabela").select("*").execute()
             
             df = pd.DataFrame(response.data)
@@ -69,11 +68,7 @@ if check_password():
 
     if not df_dados.empty:
         # CORREÇÃO DA ORDEM DAS QUESTÕES
-        # Supondo que a coluna com o nome das questões se chame 'questao' (ex: "Questão 1", "Questão 2")
-        # Se a sua coluna tiver outro nome, altere 'questao' abaixo para o nome correto.
         if 'questao' in df_dados.columns:
-            # Ordena de forma alfanumérica direta. 
-            # Dica: se tiver mais de 10 questões, use números com zero à esquerda (Questão 01, Questão 02) para não quebrar a ordem alfabética.
             df_dados = df_dados.sort_values(by='questao').reset_index(drop=True)
         
         # -------------------------------------------------------------------------
@@ -82,10 +77,10 @@ if check_password():
         st.title("📊 Painel de Resultados")
         st.write("Dados carregados com sucesso e ordenados por questão!")
         
-        # Exemplo de exibição de dados
+        # Exibição de dados
         st.dataframe(df_dados, use_container_width=True)
         
-        # Botão opcional para deslogar
+        # Botão para deslogar
         if st.sidebar.button("Sair do Painel"):
             st.session_state["password_correct"] = False
             st.rerun()
