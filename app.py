@@ -45,7 +45,7 @@ def validar(entrada, termos):
 # =====================================================
 # TÍTULO
 # =====================================================
-st.title("🩺 Avaliação de Conhecimentos: APS")
+st.title("🩺 PRÉ-TESTE - OFICINA APS - MD436")
 
 tab_quiz, tab_dash = st.tabs(
     ["📝 Responder", "📊 Resultados"]
