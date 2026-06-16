@@ -1,117 +1,94 @@
-import streamlit as st
-from supabase import create_client
+import streamlit as str
+from supabase import create_client, Client
 import pandas as pd
 
-st.set_page_config(page_title="Quiz APS - Supabase", layout="wide")
+# Configuração da página
+st.set_page_config(page_title="📊 Painel de Resultados", layout="wide")
 
-# 🔌 Conexão direta com Supabase utilizando cache para performance
-@st.cache_resource
-def init_supabase():
-    url = st.secrets["connections"]["supabase"]["url"]
-    key = st.secrets["connections"]["supabase"]["key"]
-    return create_client(url, key)
+# -------------------------------------------------------------------------
+# 1. AUTENTICAÇÃO COM SENHA
+# -------------------------------------------------------------------------
+def check_password():
+    """Retorna True se o usuário inseriu a senha correta."""
+    if "password_correct" not in st.session_state:
+        st.session_state["password_correct"] = False
 
-try:
-    supabase = init_supabase()
-except Exception as e:
-    st.error(f"Erro ao conectar ao Supabase: {e}")
-    st.stop()
+    if st.session_state["password_correct"]:
+        return True
 
-st.title("🩺 Avaliação de Conhecimentos: APS")
-
-tab_quiz, tab_dash = st.tabs(["📝 Responder", "📊 Resultados"])
-
-# =========================
-# 📝 QUIZ
-# =========================
-with tab_quiz:
-    with st.form(key="form_aps", clear_on_submit=True):
-
-        st.markdown("### 1. Evolução Histórica")
-        st.write("Em 1920, um conselho do Ministério da Saúde britânico publicou um relatório interno referente à organização de “serviços médicos e anexos”, em resposta a requisição do Ministro da Saúde. O relatório apresentava um conceito integrado de centros de saúde e serviços domiciliares. Os centros de saúde seriam primários e secundários, onde o nível primário coordenaria a assistência a partir de médicos e outros profissionais em contato direto com a comunidade.")
-        q1 = st.text_input("A qual relatório se refere o texto?")
-
-        st.divider()
-
-        st.markdown("### 2. Marcos Internacionais")
-        st.write("Em 1978, representantes de diversos países reuniram-se na União Soviética, em uma conferência internacional organizada pela Organização Mundial da Saúde e pelo UNICEF. O encontro resultou em um documento que estabeleceu a Atenção Primária à Saúde como estratégia central para alcançar melhores níveis de saúde global, tendo como lema “Saúde para todos no ano 2000” e defendendo princípios como equidade, participação comunitária e ações intersetoriais.")
-        q2 = st.text_input("A qual documento o texto se refere?")
-
-        st.divider()
-
-        st.markdown("### Atributos da APS (PCATool)")
-        st.caption("O PCATool é um instrumento padronizado para avaliar a qualidade da Atenção Primária à Saúde, medindo a presença e o grau de desenvolvimento dos quatro atributos essenciais que configuram uma APS robusta (Starfield). Correlacione as perguntas abaixo com apenas 1 atributo essencial da APS:")
-
-        q4 = st.text_input(
-            "4. Quando você vai ao serviço de saúde, é o mesmo médico ou enfermeiro que atende você todas as vezes?"
-        )
-
-        q5 = st.text_input(
-            "5. O médico ou enfermeiro sabe quais foram os resultados da consulta com o especialista ou no serviço especializado?"
-        )
-
-        q6 = st.text_input(
-            "6. O serviço de saúde fica aberto pelo menos algumas noites de dias úteis até às 20 horas?"
-        )
-
-        q7 = st.text_input(
-            "7. O serviço de saúde oferece procedimentos como remoção de verrugas ou outros pequenos procedimentos cirúrgicos?"
-        )
-
-        st.divider()
-
-        st.markdown("### 8. Equipes de Saúde")
-        q8 = st.text_input("Qual o profissional que diferencia uma equipe de AB tradicional (eAB) e de uma Equipe de Saúde da Família?")
-
-        enviar = st.form_submit_button("Enviar Respostas")
-
-    if enviar:
-        def validar(entrada, gabarito):
-            return 1 if entrada and gabarito.lower() in entrada.lower() else 0
-
-        dados = {
-            "relatorio_dawson": validar(q1, "Dawson"),
-            "alma_ata": validar(q2, "Alma"),
-            "longitudinalidade": validar(q4, "Longitudinalidade"),
-            "coordenacao": validar(q5, "Coordenação"),
-            "acesso": validar(q6, "Acesso") or validar(q6, "Contato"),
-            "integralidade": validar(q7, "Integralidade"),
-            "acs": validar(q8, "ACS") or validar(q8, "Agente")
-        }
-
-        try:
-            supabase.table("respostas_aps").insert(dados).execute()
-            st.success("✅ Enviado com sucesso!")
-            st.balloons()
-            st.rerun() 
-        except Exception as e:
-            st.error(f"❌ Erro ao enviar: {e}")
-
-# =========================
-# 📊 DASHBOARD
-# =========================
-with tab_dash:
-    st.subheader("📊 Painel de Resultados")
-
-    try:
-        res = supabase.table("respostas_aps").select("*").execute()
-
-        if res.data and len(res.data) > 0:
-            df = pd.DataFrame(res.data)
-
-            st.metric("Total de respostas recebidas", len(df))
-
-            # Filtra apenas as colunas das questões para gerar o gráfico
-            colunas_excluir = ["id", "created_at"]
-            dados_chart = df.drop(columns=[col for col in colunas_excluir if col in df.columns]).sum()
-
-            st.markdown("### Total de Acertos por Questão")
-            st.bar_chart(dados_chart)
-
-            st.markdown("### Tabela de Dados Brutos")
-            st.dataframe(df)
+    st.title("📊 Painel de Resultados")
+    st.subheader("Acesso Restrito")
+    
+    password = st.text_input("Digite a senha para acessar o painel:", type="password")
+    if st.button("Acessar"):
+        if password == "Aps123":
+            st.session_state["password_correct"] = True
+            st.rerun()
         else:
-            st.info("📥 A tabela está pronta e vazia! Envie uma resposta na aba 'Responder' para estrear o painel.")
+            st.error("Senha incorreta. Tente novamente.")
+    return False
 
-    except Exception as e:
-        st.error(f"Erro ao carregar dados do painel: {e}")
+# Só renderiza o painel se a senha estiver correta
+if check_password():
+    
+    # -------------------------------------------------------------------------
+    # 2. CONEXÃO COM O SUPABASE (Tratamento do Erro de Conexão)
+    # -------------------------------------------------------------------------
+    @st.cache_resource
+    def init_connection():
+        try:
+            url = st.secrets["SUPABASE_URL"]
+            key = st.secrets["SUPABASE_KEY"]
+            return create_client(url, key)
+        except Exception as e:
+            st.error(f"Erro ao inicializar conexão com o Supabase. Verifique os Secrets. Detalhes: {e}")
+            return None
+
+    supabase = init_connection()
+
+    # -------------------------------------------------------------------------
+    # 3. BUSCA E ORDENAÇÃO DOS DADOS
+    # -------------------------------------------------------------------------
+    def load_data():
+        if supabase is None:
+            return pd.DataFrame()
+        
+        try:
+            # Substitua 'nome_da_sua_tabela' pelo nome real da tabela no Supabase
+            # Se você já tiver uma coluna de ordem (ex: 'id_questao' ou 'numero'), adicione .order('coluna')
+            response = supabase.table("nome_da_sua_tabela").select("*").execute()
+            
+            df = pd.DataFrame(response.data)
+            return df
+        except Exception as e:
+            st.error(f"Erro ao carregar dados do painel: {e}")
+            return pd.DataFrame()
+
+    # Carrega os dados
+    df_dados = load_data()
+
+    if not df_dados.empty:
+        # CORREÇÃO DA ORDEM DAS QUESTÕES
+        # Supondo que a coluna com o nome das questões se chame 'questao' (ex: "Questão 1", "Questão 2")
+        # Se a sua coluna tiver outro nome, altere 'questao' abaixo para o nome correto.
+        if 'questao' in df_dados.columns:
+            # Ordena de forma alfanumérica direta. 
+            # Dica: se tiver mais de 10 questões, use números com zero à esquerda (Questão 01, Questão 02) para não quebrar a ordem alfabética.
+            df_dados = df_dados.sort_values(by='questao').reset_index(drop=True)
+        
+        # -------------------------------------------------------------------------
+        # 4. EXIBIÇÃO DO PAINEL
+        # -------------------------------------------------------------------------
+        st.title("📊 Painel de Resultados")
+        st.write("Dados carregados com sucesso e ordenados por questão!")
+        
+        # Exemplo de exibição de dados
+        st.dataframe(df_dados, use_container_width=True)
+        
+        # Botão opcional para deslogar
+        if st.sidebar.button("Sair do Painel"):
+            st.session_state["password_correct"] = False
+            st.rerun()
+            
+    else:
+        st.warning("Nenhum dado encontrado ou conexão indisponível no momento.")
