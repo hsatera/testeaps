@@ -1,4 +1,3 @@
-```python
 import streamlit as st
 from supabase import create_client
 import pandas as pd
@@ -170,7 +169,7 @@ with tab_quiz:
                 [
                     "acs",
                     "agente comunitário",
-                    "agente comunitario",
+                    "agentecomunitario",
                     "agente"
                 ]
             )
@@ -299,4 +298,3 @@ with tab_dash:
         st.error(
             f"Erro ao carregar dados: {e}"
         )
-```
