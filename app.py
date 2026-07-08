@@ -70,7 +70,7 @@ with st.form("quiz"):
     st.markdown("## 3. Atributos Essenciais da APS")
 
     st.caption(
-        "Correlacione cada pergunta com apenas um atributo essencial da Atenção Primária à Saúde."
+        "Correlacione cada pergunta do instrumento PCA TOOL de avaliação internacional de APS, com apenas um atributo essencial da Atenção Primária à Saúde."
     )
 
     q3 = st.text_input(
