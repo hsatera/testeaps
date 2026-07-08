@@ -1,300 +1,142 @@
 import streamlit as st
-from supabase import create_client
-import pandas as pd
 
 # =====================================================
 # CONFIGURAÇÃO
 # =====================================================
+
 st.set_page_config(
-    page_title="Quiz APS - Supabase",
+    page_title="Quiz APS",
     layout="wide"
 )
 
-SENHA_DASHBOARD = "Aps123"
-
-# =====================================================
-# CONEXÃO SUPABASE
-# =====================================================
-@st.cache_resource
-def init_supabase():
-    url = st.secrets["connections"]["supabase"]["url"]
-    key = st.secrets["connections"]["supabase"]["key"]
-    return create_client(url, key)
-
-try:
-    supabase = init_supabase()
-except Exception as e:
-    st.error(f"Erro ao conectar ao Supabase: {e}")
-    st.stop()
-
-# =====================================================
-# FUNÇÃO DE VALIDAÇÃO
-# =====================================================
 def validar(entrada, termos):
     if not entrada:
-        return 0
+        return "❌"
 
-    entrada = entrada.lower()
+    entrada = entrada.lower().strip()
 
     for termo in termos:
         if termo.lower() in entrada:
-            return 1
+            return "✅"
 
-    return 0
+    return "❌"
+
 
 # =====================================================
-# TÍTULO
+# INTERFACE
 # =====================================================
+
 st.title("🩺 PRÉ-TESTE - OFICINA APS - MD436")
 
-tab_quiz, tab_dash = st.tabs(
-    ["📝 Responder", "📊 Resultados"]
-)
+with st.form("quiz"):
 
-# =====================================================
-# QUIZ
-# =====================================================
-with tab_quiz:
+    st.markdown("## 1. Evolução Histórica")
+    st.write(
+        "Em 1920, um conselho do Ministério da Saúde britânico publicou um relatório interno..."
+    )
+    q1 = st.text_input("A qual relatório se refere o texto?")
 
-    with st.form(
-        key="form_aps",
-        clear_on_submit=True
-    ):
+    st.divider()
 
-        st.markdown("## 1. Evolução Histórica")
+    st.markdown("## 2. Marcos Internacionais")
+    st.write(
+        "Em 1978, representantes de diversos países reuniram-se em uma conferência..."
+    )
+    q2 = st.text_input("A qual documento o texto se refere?")
 
-        st.write("""
-        Em 1920, um conselho do Ministério da Saúde britânico publicou um relatório interno
-        referente à organização de serviços médicos e anexos.
+    st.divider()
 
-        O relatório apresentava um conceito integrado de centros de saúde e serviços
-        domiciliares.
-        """)
+    st.markdown("## 3. Atributos Essenciais da APS")
+    st.caption("Correlacione cada pergunta com apenas um atributo essencial da APS.")
 
-        q1 = st.text_input(
-            "A qual relatório se refere o texto?"
-        )
-
-        st.divider()
-
-        st.markdown("## 2. Marcos Internacionais")
-
-        st.write("""
-        Em 1978, representantes de diversos países reuniram-se em uma conferência
-        organizada pela OMS e UNICEF.
-
-        O encontro resultou em um documento que estabeleceu a Atenção Primária à Saúde
-        como estratégia central para alcançar melhores níveis de saúde global.
-        """)
-
-        q2 = st.text_input(
-            "A qual documento o texto se refere?"
-        )
-
-        st.divider()
-
-        st.markdown("## 3. Atributos Essenciais da APS")
-
-        st.caption(
-            "Correlacione cada pergunta com apenas um atributo essencial da APS."
-        )
-
-        q3 = st.text_input(
-            "Quando você vai ao serviço de saúde, é o mesmo médico ou enfermeiro que atende você todas as vezes?"
-        )
-
-        q4 = st.text_input(
-            "O médico ou enfermeiro sabe quais foram os resultados da consulta com o especialista ou no serviço especializado?"
-        )
-
-        q5 = st.text_input(
-            "O serviço de saúde fica aberto pelo menos algumas noites de dias úteis até às 20 horas?"
-        )
-
-        q6 = st.text_input(
-            "O serviço de saúde oferece procedimentos como remoção de verrugas ou outros pequenos procedimentos cirúrgicos?"
-        )
-
-        st.divider()
-
-        st.markdown("## 4. Equipes de Saúde")
-
-        q7 = st.text_input(
-            "Qual profissional diferencia uma equipe de AB tradicional (eAB) de uma Equipe de Saúde da Família?"
-        )
-
-        enviar = st.form_submit_button(
-            "Enviar Respostas"
-        )
-
-    if enviar:
-
-        dados = {
-            "relatorio_dawson": validar(
-                q1,
-                ["dawson"]
-            ),
-
-            "alma_ata": validar(
-                q2,
-                ["alma", "alma-ata", "alma ata"]
-            ),
-
-            "longitudinalidade": validar(
-                q3,
-                ["longitudinalidade"]
-            ),
-
-            "coordenacao": validar(
-                q4,
-                ["coordenação", "coordenacao"]
-            ),
-
-            "acesso_primeiro_contato": validar(
-                q5,
-                [
-                    "acesso",
-                    "primeiro contato",
-                    "contato"
-                ]
-            ),
-
-            "integralidade": validar(
-                q6,
-                ["integralidade"]
-            ),
-
-            "acs": validar(
-                q7,
-                [
-                    "acs",
-                    "agente comunitário",
-                    "agentecomunitario",
-                    "agente"
-                ]
-            )
-        }
-
-        dados["total"] = sum(dados.values())
-
-        try:
-
-            supabase.table(
-                "respostas_aps"
-            ).insert(
-                dados
-            ).execute()
-
-            st.success(
-                f"✅ Respostas enviadas! Nota: {dados['total']}/7"
-            )
-
-            st.balloons()
-
-        except Exception as e:
-
-            st.error(
-                f"❌ Erro ao enviar: {e}"
-            )
-
-# =====================================================
-# DASHBOARD PROTEGIDO POR SENHA
-# =====================================================
-with tab_dash:
-
-    st.subheader("🔒 Área Restrita")
-
-    senha = st.text_input(
-        "Digite a senha para acessar os resultados",
-        type="password"
+    q3 = st.text_input(
+        "Quando você vai ao serviço de saúde, é o mesmo médico ou enfermeiro que o atende?"
     )
 
-    if senha != SENHA_DASHBOARD:
+    q4 = st.text_input(
+        "O médico ou enfermeiro sabe quais foram os resultados da consulta com outros especialistas?"
+    )
 
-        if senha != "":
-            st.error("Senha incorreta.")
+    q5 = st.text_input(
+        "O serviço de saúde fica aberto pelo menos algumas noites ou finais de semana?"
+    )
 
-        st.info("Digite a senha para visualizar o painel.")
-        st.stop()
+    q6 = st.text_input(
+        "O serviço de saúde oferece procedimentos como remoção de verrugas, suturas e pequenos procedimentos?"
+    )
 
-    st.success("Acesso autorizado.")
+    st.divider()
 
-    st.subheader("📊 Painel de Resultados")
+    st.markdown("## 4. Equipes de Saúde")
 
-    try:
+    q7 = st.text_input(
+        "Qual profissional diferencia uma equipe de Atenção Básica tradicional de uma ESF?"
+    )
 
-        resposta = (
-            supabase
-            .table("respostas_aps")
-            .select("*")
-            .execute()
-        )
+    enviar = st.form_submit_button("Enviar")
 
-        if resposta.data:
 
-            df = pd.DataFrame(
-                resposta.data
-            )
+# =====================================================
+# CORREÇÃO
+# =====================================================
 
-            st.metric(
-                "Total de respostas",
-                len(df)
-            )
+if enviar:
 
-            if "total" in df.columns:
+    resultados = [
+        validar(q1, [
+            "dawson",
+            "relatório dawson",
+            "relatorio dawson"
+        ]),
 
-                st.metric(
-                    "Média Geral",
-                    round(
-                        df["total"].mean(),
-                        2
-                    )
-                )
+        validar(q2, [
+            "alma",
+            "alma ata",
+            "alma-ata"
+        ]),
 
-                st.metric(
-                    "Percentual Médio",
-                    f"{round(df['total'].mean()/7*100,1)}%"
-                )
+        validar(q3, [
+            "longitudinalidade"
+        ]),
 
-            questoes = [
-                "relatorio_dawson",
-                "alma_ata",
-                "longitudinalidade",
-                "coordenacao",
-                "acesso_primeiro_contato",
-                "integralidade",
-                "acs"
-            ]
+        validar(q4, [
+            "coordenação",
+            "coordenacao",
+            "coordenação do cuidado",
+            "coordenacao do cuidado",
+            "coordenação clínica",
+            "coordenacao clinica"
+        ]),
 
-            st.markdown("### Acertos por Questão")
+        validar(q5, [
+            "acesso",
+            "acesso de primeiro contato",
+            "primeiro contato",
+            "primeiro acesso",
+            "porta de entrada",
+            "contato inicial"
+        ]),
 
-            dados_chart = (
-                df[questoes]
-                .sum()
-                .sort_values(
-                    ascending=False
-                )
-            )
+        validar(q6, [
+            "integralidade"
+        ]),
 
-            st.bar_chart(
-                dados_chart
-            )
+        validar(q7, [
+            "acs",
+            "agente comunitário",
+            "agente comunitario",
+            "agente"
+        ])
+    ]
 
-            st.markdown("### Dados Brutos")
+    nota = resultados.count("✅")
 
-            st.dataframe(
-                df,
-                use_container_width=True
-            )
+    st.success(f"Você acertou **{nota}/7** questões.")
 
-        else:
+    st.markdown("## Resultado")
 
-            st.info(
-                "Nenhuma resposta cadastrada."
-            )
+    for i, resultado in enumerate(resultados, start=1):
+        st.write(f"**Questão {i}:** {resultado}")
 
-    except Exception as e:
-
-        st.error(
-            f"Erro ao carregar dados: {e}"
-        )
+    if nota == 7:
+        st.balloons()
