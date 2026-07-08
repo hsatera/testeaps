@@ -5,7 +5,7 @@ import streamlit as st
 # =====================================================
 
 st.set_page_config(
-    page_title="Quiz APS",
+    page_title="PRÉ-TESTE - MD436",
     layout="wide"
 )
 
@@ -30,47 +30,103 @@ st.title("🩺 PRÉ-TESTE - OFICINA APS - MD436")
 
 with st.form("quiz"):
 
+    # =================================================
+    # QUESTÃO 1
+    # =================================================
+
     st.markdown("## 1. Evolução Histórica")
     st.write(
-        "Em 1920, um conselho do Ministério da Saúde britânico publicou um relatório interno..."
+        "Em 1920, um conselho do Ministério da Saúde britânico publicou um relatório interno que propôs a organização regionalizada dos serviços de saúde e influenciou diversos sistemas de saúde ao redor do mundo."
     )
-    q1 = st.text_input("A qual relatório se refere o texto?")
+
+    q1 = st.text_input(
+        "A qual relatório se refere o texto?"
+    )
 
     st.divider()
+
+    # =================================================
+    # QUESTÃO 2
+    # =================================================
 
     st.markdown("## 2. Marcos Internacionais")
+
     st.write(
-        "Em 1978, representantes de diversos países reuniram-se em uma conferência..."
+        "Em 1978, representantes de diversos países reuniram-se em uma conferência internacional organizada pela OMS e UNICEF, defendendo a Atenção Primária à Saúde como estratégia para alcançar saúde para todos."
     )
-    q2 = st.text_input("A qual documento o texto se refere?")
+
+    q2 = st.text_input(
+        "A qual documento o texto se refere?"
+    )
 
     st.divider()
 
+    # =================================================
+    # QUESTÃO 3
+    # =================================================
+
     st.markdown("## 3. Atributos Essenciais da APS")
-    st.caption("Correlacione cada pergunta com apenas um atributo essencial da APS.")
+
+    st.caption(
+        "Correlacione cada pergunta com apenas um atributo essencial da Atenção Primária à Saúde."
+    )
 
     q3 = st.text_input(
-        "Quando você vai ao serviço de saúde, é o mesmo médico ou enfermeiro que o atende?"
+        "Quando você vai ao serviço de saúde, é o mesmo médico ou enfermeiro que normalmente o atende?"
     )
 
     q4 = st.text_input(
-        "O médico ou enfermeiro sabe quais foram os resultados da consulta com outros especialistas?"
+        "O médico ou enfermeiro sabe quais foram os resultados das consultas realizadas com outros especialistas?"
     )
 
     q5 = st.text_input(
-        "O serviço de saúde fica aberto pelo menos algumas noites ou finais de semana?"
+        "O serviço de saúde fica aberto em horários alternativos, como algumas noites ou finais de semana?"
     )
 
     q6 = st.text_input(
-        "O serviço de saúde oferece procedimentos como remoção de verrugas, suturas e pequenos procedimentos?"
+        "O serviço de saúde realiza pequenos procedimentos, como suturas, remoção de verrugas ou unhas encravadas?"
     )
 
     st.divider()
 
-    st.markdown("## 4. Equipes de Saúde")
+    # =================================================
+    # QUESTÃO 4
+    # =================================================
+
+    st.markdown("## 4. Estratégia Saúde da Família")
 
     q7 = st.text_input(
-        "Qual profissional diferencia uma equipe de Atenção Básica tradicional de uma ESF?"
+        "Qual profissional diferencia uma equipe de Atenção Básica tradicional de uma equipe da Estratégia Saúde da Família?"
+    )
+
+    st.divider()
+
+    # =================================================
+    # QUESTÃO 5
+    # =================================================
+
+    st.markdown("## 5. e-Multi")
+
+    q8 = st.radio(
+        "Dentre as categorias/especialidades abaixo, qual NÃO faz parte das e-Multi (equipes multiprofissionais) na Atenção Primária à Saúde?",
+        (
+            "Pediatra",
+            "Arte educador",
+            "Médico de Família e Comunidade",
+            "Assistente Social"
+        )
+    )
+
+    st.divider()
+
+    # =================================================
+    # QUESTÃO 6
+    # =================================================
+
+    st.markdown("## 6. Saúde Mental")
+
+    q9 = st.text_input(
+        "Qual é o nome do processo realizado entre as equipes da Estratégia Saúde da Família e os CAPS AD, CAPS IJ e CAPS III, que promove troca de saberes, apoio técnico-pedagógico, corresponsabilização dos casos e construção compartilhada de Projetos Terapêuticos Singulares?"
     )
 
     enviar = st.form_submit_button("Enviar")
@@ -83,6 +139,7 @@ with st.form("quiz"):
 if enviar:
 
     resultados = [
+
         validar(q1, [
             "dawson",
             "relatório dawson",
@@ -125,18 +182,27 @@ if enviar:
             "acs",
             "agente comunitário",
             "agente comunitario",
-            "agente"
+            "agente comunitário de saúde",
+            "agente comunitario de saude"
+        ]),
+
+        "✅" if q8 == "Médico de Família e Comunidade" else "❌",
+
+        validar(q9, [
+            "matriciamento",
+            "apoio matricial"
         ])
+
     ]
 
     nota = resultados.count("✅")
 
-    st.success(f"Você acertou **{nota}/7** questões.")
+    st.success(f"Você acertou **{nota}/9** questões.")
 
     st.markdown("## Resultado")
 
     for i, resultado in enumerate(resultados, start=1):
         st.write(f"**Questão {i}:** {resultado}")
 
-    if nota == 7:
+    if nota == 9:
         st.balloons()
