@@ -5,11 +5,12 @@ import streamlit as st
 # =====================================================
 
 st.set_page_config(
-    page_title="PRÉ-TESTE - MD436",
+    page_title="Quiz APS",
     layout="wide"
 )
 
 def validar(entrada, termos):
+    """Retorna ✅ se algum termo esperado estiver contido na resposta."""
     if not entrada:
         return "❌"
 
@@ -35,6 +36,7 @@ with st.form("quiz"):
     # =================================================
 
     st.markdown("## 1. Evolução Histórica")
+
     st.write(
         "Em 1920, um conselho do Ministério da Saúde britânico publicou um relatório interno que propôs a organização regionalizada dos serviços de saúde e influenciou diversos sistemas de saúde ao redor do mundo."
     )
@@ -105,10 +107,10 @@ with st.form("quiz"):
     # QUESTÃO 5
     # =================================================
 
-    st.markdown("## 5. e-Multi")
+    st.markdown("## 5. eMulti")
 
     q8 = st.radio(
-        "Dentre as categorias/especialidades abaixo, qual NÃO faz parte das e-Multi (equipes multiprofissionais) na Atenção Primária à Saúde?",
+        "Dentre as categorias/especialidades abaixo, qual NÃO faz parte das eMulti (equipes multiprofissionais) na Atenção Primária à Saúde?",
         (
             "Pediatra",
             "Arte educador",
@@ -129,6 +131,18 @@ with st.form("quiz"):
         "Qual é o nome do processo realizado entre as equipes da Estratégia Saúde da Família e os CAPS AD, CAPS IJ e CAPS III, que promove troca de saberes, apoio técnico-pedagógico, corresponsabilização dos casos e construção compartilhada de Projetos Terapêuticos Singulares?"
     )
 
+    st.divider()
+
+    # =================================================
+    # QUESTÃO 7
+    # =================================================
+
+    st.markdown("## 7. Política Nacional de Atenção Básica")
+
+    q10 = st.text_input(
+        "Segundo a última Política Nacional de Atenção Básica, qual o tamanho preconizado máximo de população adscrita por equipe de Saúde da Família (eSF)?"
+    )
+
     enviar = st.form_submit_button("Enviar")
 
 
@@ -140,22 +154,26 @@ if enviar:
 
     resultados = [
 
+        # Q1
         validar(q1, [
             "dawson",
             "relatório dawson",
             "relatorio dawson"
         ]),
 
+        # Q2
         validar(q2, [
             "alma",
             "alma ata",
             "alma-ata"
         ]),
 
+        # Q3
         validar(q3, [
             "longitudinalidade"
         ]),
 
+        # Q4
         validar(q4, [
             "coordenação",
             "coordenacao",
@@ -165,6 +183,7 @@ if enviar:
             "coordenacao clinica"
         ]),
 
+        # Q5
         validar(q5, [
             "acesso",
             "acesso de primeiro contato",
@@ -174,10 +193,12 @@ if enviar:
             "contato inicial"
         ]),
 
+        # Q6
         validar(q6, [
             "integralidade"
         ]),
 
+        # Q7
         validar(q7, [
             "acs",
             "agente comunitário",
@@ -186,23 +207,35 @@ if enviar:
             "agente comunitario de saude"
         ]),
 
+        # Q8
         "✅" if q8 == "Médico de Família e Comunidade" else "❌",
 
+        # Q9
         validar(q9, [
             "matriciamento",
             "apoio matricial"
+        ]),
+
+        # Q10
+        validar(q10, [
+            "3500",
+            "3.500",
+            "3500 habitantes",
+            "3500 pessoas",
+            "até 3500",
+            "3.500 habitantes"
         ])
 
     ]
 
     nota = resultados.count("✅")
 
-    st.success(f"Você acertou **{nota}/9** questões.")
+    st.success(f"Você acertou **{nota}/10** questões.")
 
     st.markdown("## Resultado")
 
     for i, resultado in enumerate(resultados, start=1):
         st.write(f"**Questão {i}:** {resultado}")
 
-    if nota == 9:
+    if nota == 10:
         st.balloons()
